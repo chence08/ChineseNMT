@@ -1,0 +1,7 @@
+2023-03-24 01:56:34,547:WARNING: Found cached dataset iwslt2017 (/Users/chen/.cache/huggingface/datasets/iwslt2017/iwslt2017-zh-en/1.0.0/03ce9110373117c6f6687719f49f269486a8cd49dcad2527993a316cd4b6ad49)
+2023-03-24 01:56:35,442:INFO: -------- Dataset Build! --------
+2023-03-24 01:56:35,443:INFO: -------- Get Dataloader! --------
+2023-03-24 01:57:20,776:INFO: Epoch: 1, loss: 10.388307571411133
+2023-03-24 02:07:59,285:INFO: Epoch: 1, Dev loss: 10.35068130493164, Bleu Score: 4.871506898275279e-06
+2023-03-24 02:08:00,459:INFO: -------- Save Best Model! --------
+2023-03-24 02:09:50,298:INFO: Epoch: 2, loss: 10.312756538391113

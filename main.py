@@ -10,6 +10,7 @@ from train import train, test, translate
 from data_loader import MTDataset
 from utils import english_tokenizer_load
 from model import make_model, LabelSmoothing
+from datasets import load_dataset
 
 
 class NoamOpt:
@@ -46,11 +47,12 @@ def get_std_opt(model):
 
 
 def run():
-    utils.set_logger(config.log_path)
-
-    train_dataset = MTDataset(config.train_data_path)
-    dev_dataset = MTDataset(config.dev_data_path)
-    test_dataset = MTDataset(config.test_data_path)
+    utils.set_logger(config.log_path) 
+    raw_datasets = load_dataset('iwslt2017', 'iwslt2017-zh-en') 
+    train_dataset = MTDataset(raw_datasets['train']['translation'][:1000]) 
+     
+    dev_dataset = MTDataset(raw_datasets['validation']['translation'][:1000]) 
+    test_dataset = MTDataset(raw_datasets['test']['translation'][:10])
 
     logging.info("-------- Dataset Build! --------")
     train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=config.batch_size,
@@ -116,8 +118,8 @@ def translate_example():
 
 
 if __name__ == "__main__":
-    import os
-    os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3'
+    # import os
+    # os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3'
     import warnings
     warnings.filterwarnings('ignore')
     # run()

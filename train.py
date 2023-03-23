@@ -34,13 +34,13 @@ def train(train_data, dev_data, model, model_par, criterion, optimizer):
         # 模型训练
         model.train()
         train_loss = run_epoch(train_data, model_par,
-                               MultiGPULossCompute(model.generator, criterion, config.device_id, optimizer))
+                               LossCompute(model.generator, criterion, optimizer))
         logging.info("Epoch: {}, loss: {}".format(epoch, train_loss))
         # 模型验证
         model.eval()
         dev_loss = run_epoch(dev_data, model_par,
-                             MultiGPULossCompute(model.generator, criterion, config.device_id, None))
-        bleu_score = evaluate(dev_data, model)
+                             LossCompute(model.generator, criterion, None))
+        bleu_score = evaluate(dev_data, model, use_beam=False)
         logging.info('Epoch: {}, Dev loss: {}, Bleu Score: {}'.format(epoch, dev_loss, bleu_score))
 
         # 如果当前epoch的模型在dev集上的loss优于之前记录的最优loss则保存当前模型，并更新最优loss值
@@ -157,7 +157,8 @@ def evaluate(data, model, mode='dev', use_beam=True):
             else:
                 decode_result = batch_greedy_decode(model, src, src_mask,
                                                     max_len=config.max_len)
-            decode_result = [h[0] for h in decode_result]
+            
+            decode_result = [h for h in decode_result]
             translation = [sp_chn.decode_ids(_s) for _s in decode_result]
             trg.extend(cn_sent)
             res.extend(translation)
@@ -179,7 +180,7 @@ def test(data, model, criterion):
         model.eval()
         # 开始预测
         test_loss = run_epoch(data, model_par,
-                              MultiGPULossCompute(model.generator, criterion, config.device_id, None))
+                              LossCompute(model.generator, criterion, None))
         bleu_score = evaluate(data, model, 'test')
         logging.info('Test loss: {},  Bleu Score: {}'.format(test_loss, bleu_score))
 
