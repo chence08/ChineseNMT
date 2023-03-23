@@ -49,10 +49,10 @@ def get_std_opt(model):
 def run():
     utils.set_logger(config.log_path) 
     raw_datasets = load_dataset('iwslt2017', 'iwslt2017-zh-en') 
-    train_dataset = MTDataset(raw_datasets['train']['translation'][:1000]) 
+    train_dataset = MTDataset(raw_datasets['train']['translation']) 
      
-    dev_dataset = MTDataset(raw_datasets['validation']['translation'][:1000]) 
-    test_dataset = MTDataset(raw_datasets['test']['translation'][:10])
+    dev_dataset = MTDataset(raw_datasets['validation']['translation']) 
+    test_dataset = MTDataset(raw_datasets['test']['translation'])
 
     logging.info("-------- Dataset Build! --------")
     train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=config.batch_size,
@@ -118,9 +118,9 @@ def translate_example():
 
 
 if __name__ == "__main__":
-    # import os
-    # os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3'
+    import os
+    os.environ['CUDA_VISIBLE_DEVICES'] = '2, 3'
     import warnings
     warnings.filterwarnings('ignore')
-    # run()
-    translate_example()
+    run()
+    # translate_example()

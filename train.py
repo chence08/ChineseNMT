@@ -34,12 +34,13 @@ def train(train_data, dev_data, model, model_par, criterion, optimizer):
         # 模型训练
         model.train()
         train_loss = run_epoch(train_data, model_par,
-                               LossCompute(model.generator, criterion, optimizer))
+                               MultiGPULossCompute(model.generator, criterion, optimizer))
         logging.info("Epoch: {}, loss: {}".format(epoch, train_loss))
         # 模型验证
         model.eval()
         dev_loss = run_epoch(dev_data, model_par,
-                             LossCompute(model.generator, criterion, None))
+                             MultiGPULossCompute(model.generator, criterion, None))
+        # TODO: Try to use beam search to get the bleu score, if GPU memory is enough.
         bleu_score = evaluate(dev_data, model, use_beam=False)
         logging.info('Epoch: {}, Dev loss: {}, Bleu Score: {}'.format(epoch, dev_loss, bleu_score))
 
@@ -180,7 +181,7 @@ def test(data, model, criterion):
         model.eval()
         # 开始预测
         test_loss = run_epoch(data, model_par,
-                              LossCompute(model.generator, criterion, None))
+                              MultiGPULossCompute(model.generator, criterion, None))
         bleu_score = evaluate(data, model, 'test')
         logging.info('Test loss: {},  Bleu Score: {}'.format(test_loss, bleu_score))
 
