@@ -45,3 +45,8 @@ if gpu_id != '':
     device = torch.device(f"cuda:{gpu_id}")
 else:
     device = torch.device('cpu')
+
+print("CUDA Available?: " + str(torch.cuda.is_available()))
+print("CUDA Device Count?: " + str(torch.cuda.device_count()))
+device_id = [0, 1]
+device = torch.device("cuda")

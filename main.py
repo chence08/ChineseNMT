@@ -49,10 +49,10 @@ def get_std_opt(model):
 def run():
     utils.set_logger(config.log_path) 
     raw_datasets = load_dataset('iwslt2017', 'iwslt2017-zh-en') 
-    train_dataset = MTDataset(raw_datasets['train']['translation']) 
+    train_dataset = MTDataset(raw_datasets['train']['translation'][:1000]) 
      
-    dev_dataset = MTDataset(raw_datasets['validation']['translation']) 
-    test_dataset = MTDataset(raw_datasets['test']['translation'])
+    dev_dataset = MTDataset(raw_datasets['validation']['translation'][:1000]) 
+    test_dataset = MTDataset(raw_datasets['test']['translation'][:1000])
 
     logging.info("-------- Dataset Build! --------")
     train_dataloader = DataLoader(train_dataset, shuffle=True, batch_size=config.batch_size,

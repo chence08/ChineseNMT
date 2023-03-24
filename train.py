@@ -33,13 +33,13 @@ def train(train_data, dev_data, model, model_par, criterion, optimizer):
     for epoch in range(1, config.epoch_num + 1):
         # 模型训练
         model.train()
-        train_loss = run_epoch(train_data, model_par,
-                               MultiGPULossCompute(model.generator, criterion, optimizer))
+        train_loss = run_epoch(train_data, model_par, 
+                               MultiGPULossCompute(model.generator, criterion, config.device_id, optimizer))
         logging.info("Epoch: {}, loss: {}".format(epoch, train_loss))
         # 模型验证
         model.eval()
-        dev_loss = run_epoch(dev_data, model_par,
-                             MultiGPULossCompute(model.generator, criterion, None))
+        dev_loss = run_epoch(dev_data, model_par, 
+                             MultiGPULossCompute(model.generator, criterion, config.device_id, None))
         # TODO: Try to use beam search to get the bleu score, if GPU memory is enough.
         bleu_score = evaluate(dev_data, model, use_beam=False)
         logging.info('Epoch: {}, Dev loss: {}, Bleu Score: {}'.format(epoch, dev_loss, bleu_score))
@@ -61,16 +61,18 @@ def train(train_data, dev_data, model, model_par, criterion, optimizer):
 class LossCompute:
     """简单的计算损失和进行参数反向传播更新训练的函数"""
 
-    def __init__(self, generator, criterion, opt=None):
+    def __init__(self, generator, criterion, opt=None, is_train=True):
         self.generator = generator
         self.criterion = criterion
         self.opt = opt
+        self.is_train = is_train
 
     def __call__(self, x, y, norm):
         x = self.generator(x)
         loss = self.criterion(x.contiguous().view(-1, x.size(-1)),
                               y.contiguous().view(-1)) / norm
-        loss.backward()
+        if self.is_train:
+            loss.backward()
         if self.opt is not None:
             self.opt.step()
             if config.use_noamopt:
@@ -166,10 +168,14 @@ def evaluate(data, model, mode='dev', use_beam=True):
     if mode == 'test':
         with open(config.output_path, "w") as fp:
             for i in range(len(trg)):
-                line = "idx:" + str(i) + trg[i] + '|||' + res[i] + '\n'
+                line = "idx:" + str(i) + str(trg[i]) + '|||' + str(res[i]) + '\n'
                 fp.write(line)
     trg = [trg]
-    bleu = sacrebleu.corpus_bleu(res, trg, tokenize='zh')
+    result = []
+    for r in res:
+        result.append("".join(r))
+    # bleu = sacrebleu.corpus_bleu(res, trg, tokenize='zh')
+    bleu = sacrebleu.corpus_bleu(result, trg, tokenize='zh')
     return float(bleu.score)
 
 
@@ -180,8 +186,8 @@ def test(data, model, criterion):
         model_par = torch.nn.DataParallel(model)
         model.eval()
         # 开始预测
-        test_loss = run_epoch(data, model_par,
-                              MultiGPULossCompute(model.generator, criterion, None))
+        test_loss = run_epoch(data, model_par, 
+                              MultiGPULossCompute(model.generator, criterion, config.device_id, None))
         bleu_score = evaluate(data, model, 'test')
         logging.info('Test loss: {},  Bleu Score: {}'.format(test_loss, bleu_score))
 
